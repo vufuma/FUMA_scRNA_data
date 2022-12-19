@@ -1,5 +1,3 @@
-# cell_types = ["Astro"]
-# stages = ["Adult"]
 level1_cell_types = ['PN', 'IN', 'Non-Neu']
 level2_cell_types = ['L4_RORB', 'L2-3_CUX2', 'SST', 'Astro', 'L5-6_TLE4', 'L5-6_THEMIS', 'VIP', 'OPC', 'PV', 'PV_SCUBE3', 'ID2', 'Oligo', 'LAMP5_NOS1', 'Micro', 'Vas', 'MGE_dev', 'PN_dev', 'CGE_dev']
 stages = ['Adult', 'Infancy', 'Adolescence', 'Fetal', 'Childhood', 'Neonatal']
@@ -7,16 +5,16 @@ level3_cell_types = ['L4_RORB_dev-2', 'L2-3_CUX2_dev-2', 'SST_CALB1_dev', 'Astro
 
 rule all:
     input:
-        expand("/home/tphung/data/herring_human_pfc/processed/level1/{stage}/{ct}_{stage}_mean_magma_input.txt", ct=level1_cell_types, stage=stages) #level1
-        expand("/home/tphung/data/herring_human_pfc/processed/level2/{stage}/{ct}_{stage}_mean_magma_input.txt", ct=level2_cell_types, stage=stages) #level2
-        expand("/home/tphung/data/herring_human_pfc/processed/level3/{stage}/{ct}_{stage}_mean_magma_input.txt", ct=level3_cell_types, stage=stages) #level3
+        expand("level1/{stage}/{ct}_{stage}_mean_magma_input.txt", ct=level1_cell_types, stage=stages) #level1
+        expand("level2/{stage}/{ct}_{stage}_mean_magma_input.txt", ct=level2_cell_types, stage=stages) #level2
+        expand("level3/{stage}/{ct}_{stage}_mean_magma_input.txt", ct=level3_cell_types, stage=stages) #level3
 
 rule process_herring_level1:
     input:
-        count_fn = "/home/tphung/data/herring_human_pfc/level1/{ct}_{stage}.csv",
-        ensg = "/home/tphung/data/reference/ENSG.genes.txt"
+        count_fn = "level1/{ct}_{stage}.csv",
+        ensg = "ENSG.genes.txt"
     output:
-        mean = "/home/tphung/data/herring_human_pfc/processed/level1/{stage}/{ct}_{stage}_mean_magma_input.txt"
+        mean = "level1/{stage}/{ct}_{stage}_mean_magma_input.txt"
     params:
         celltype = "{ct}"
     shell:
@@ -26,10 +24,10 @@ rule process_herring_level1:
 
 rule process_herring_level2:
     input:
-        count_fn = "/home/tphung/data/herring_human_pfc/level2/{ct}_{stage}.csv",
-        ensg = "/home/tphung/data/reference/ENSG.genes.txt"
+        count_fn = "level2/{ct}_{stage}.csv",
+        ensg = "ENSG.genes.txt"
     output:
-        mean = "/home/tphung/data/herring_human_pfc/processed/level2/{stage}/{ct}_{stage}_mean_magma_input.txt"
+        mean = "level2/{stage}/{ct}_{stage}_mean_magma_input.txt"
     params:
         celltype = "{ct}"
     shell:
@@ -39,10 +37,10 @@ rule process_herring_level2:
 
 rule process_herring_level3:
     input:
-        count_fn = "/home/tphung/data/herring_human_pfc/level3/{ct}_{stage}.csv",
-        ensg = "/home/tphung/data/reference/ENSG.genes.txt"
+        count_fn = "level3/{ct}_{stage}.csv",
+        ensg = "ENSG.genes.txt"
     output:
-        mean = "/home/tphung/data/herring_human_pfc/processed/level3/{stage}/{ct}_{stage}_mean_magma_input.txt"
+        mean = "level3/{stage}/{ct}_{stage}_mean_magma_input.txt"
     params:
         celltype = "{ct}"
     shell:
