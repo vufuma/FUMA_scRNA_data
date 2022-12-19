@@ -29,33 +29,51 @@ The output file is mm2hs.RData
 - Data downloaded from https://console.cloud.google.com/storage/browser/neuro-dev/Processed_data (downloaded on 16-12-2022)
 - The data includes 3 levels:
 + level1 (called `cell_type`) in the metadata contains 3 cell types: PN, IN, and Non-Neu (did not consider Poor-Quality)
-```
-metadata_fn = "Processed_data_RNA-all_BCs-meta-data.csv"
-metadata = pd.read_csv(metadata_fn)
-metadata["cell_type"].unique()
-<!-- array(['PN', 'IN', 'Non-Neu', 'Poor-Quality'], dtype=object) -->
-```
 + level2 (called `major_clust`) in the metadata contains 18 cell types: 'L4_RORB', 'L2-3_CUX2', 'SST', 'Astro', 'L5-6_TLE4', 'L5-6_THEMIS', 'VIP', 'OPC', 'PV', 'PV_SCUBE3', 'ID2', 'Oligo', 'LAMP5_NOS1', 'Micro', 'Vas', 'MGE_dev', 'PN_dev', 'CGE_dev' (did not consider Poor-Quality)
-
 + level 3 (called `sub-clust`) in the metadata contains 86 cell types: 'L4_RORB_dev-2', 'L2-3_CUX2_dev-2', 'SST_CALB1_dev', 'Astro_dev-2', 'L5-6_TLE4_SCUBE1', 'L5-6_THEMIS_dev-2', 'VIP_ABI3BP', 'SST_STK32A', 'OPC_dev', 'SST_ADGRG6_dev', 'VIP_CHRM2', 'PV_dev', 'SST_BRINP3', 'PV_SCUBE3_dev', 'CCK_SYT6', 'ID2_dev', 'L5-6_TLE4_HTR2C', 'L4_RORB_MME', 'L5-6_TLE4_SORCS1', 'Astro_dev-1', 'L2-3_CUX2_dev-3', 'VIP_HS3ST3A1', 'LAMP5_NDNF', 'SST_B3GAT2', 'OPC_MBP', 'Astro_SLC1A2_dev', 'LAMP5_NOS1', 'SST_NPY', 'VIP_ADAMTSL1', 'VIP_DPP6', 'L2-3_CUX2_dev-6', 'PV_SULF1_dev', 'SST_TH', 'VIP_CRH', 'VIP_PCDH20', 'VIP_KIRREL3', 'L4_RORB_dev-1', 'L5-6_TLE4_dev', 'CCK_RELN', 'Astro_GFAP', 'LAMP5_CCK', 'Astro_dev-4', 'OPC', 'Micro', 'Vas_CLDN5', 'PV_SST', 'MGE_dev-1', 'L5-6_THEMIS_dev-1', 'ID2_CSMD1', 'PV_SULF1', 'L2_CUX2_LAMP5_dev', 'CCK_SORCS1', 'SST_ADGRG6', 'L5-6_THEMIS_NTNG2', 'L2-3_CUX2_dev-5', 'MGE_dev-2', 'PV_WFDC2', 'VIP_dev', 'SST_CALB1', 'L5-6_THEMIS_CNR1', 'Astro_SLC1A2', 'L2-3_CUX2_dev-1', 'L4_RORB_LRRK1', 'L2_CUX2_LAMP5', 'L4_RORB_MET', 'L3_CUX2_PRSS12', 'PV_SCUBE3', 'BKGR_NRGN', 'Oligo_mat', 'Micro_out', 'Oligo-4', 'Oligo-1', 'Vas_TBX18', 'Oligo-2', 'Oligo-5', 'L2-3_CUX2_dev-fetal', 'Oligo-3', 'L4_RORB_dev-fetal', 'L2-3_CUX2_dev-4', 'Vas_PDGFRB', 'PN_dev', 'CGE_dev', 'Astro_dev-3', 'Oligo-7', 'Astro_dev-5', 'Oligo-6'
++ The metadata `Processed_data_RNA-all_BCs-meta-data.csv` has the wrong stage for the barcode. 
 
 ### Step 1: Run a python script in order to get the gene expression per stage per celltype per level
 ```
 python process_herring.py
 ```
+- **Notes**: The metadata `Processed_data_RNA-all_BCs-meta-data.csv` has the wrong stage for the barcode. I updated the stage for each barcode in the above script. Python code to reproduce this issue:
+```
+>>> import scanpy as sc
+>>> scrnaseq_data_fn = "Processed_data_RNA-all_full-counts-and-downsampled-CPM.h5ad"
+>>> scrna_data = sc.read_h5ad(scrnaseq_data_fn)
+>>> meta_data = scrna_data.obs
+>>> meta_data["stage_id"]
+AAACCTGAGAGTCGGT-RL1612_34d_v2        Adult
+AAACCTGAGCCGCCTA-RL1612_34d_v2        Adult
+AAACCTGAGTCGAGTG-RL1612_34d_v2        Adult
+AAACCTGAGTGAACAT-RL1612_34d_v2        Adult
+AAACCTGCAAGGACTG-RL1612_34d_v2        Adult
+                                     ...
+TTTGTTGCACCAGCGT-RL2132_25yr_v3    Neonatal
+TTTGTTGCACCGCTGA-RL2132_25yr_v3    Neonatal
+TTTGTTGGTAAGGTCG-RL2132_25yr_v3    Neonatal
+TTTGTTGGTTCGGCTG-RL2132_25yr_v3    Neonatal
+TTTGTTGTCGTCCTCA-RL2132_25yr_v3    Neonatal
+Name: stage_id, Length: 154748, dtype: category
+Categories (6, object): ['Fetal', 'Neonatal', 'Infancy', 'Childhood', 'Adolescence', 'Adult']
+```
+        + as you can see, the barcode that is 34 days is incorrectly labelled as `Adult`
+        + therefore, I had to modify this in the script to correct it
+- This script outputs: for each of the 3 levels, for each cell type, for each of the 6 stages, a file where each row is a gene and a column is the gene expression for a cell for that particular cell type.
 
 ### Step 2: Compute mean across all cells per stage per celltype per level
 - Snakemake file: `process_herring.smk`
 - Output: for each of the 3 levels, for each of the 6 stages, mean gene expression across all cells for that cell type
 
 ### Step 3: For each level, combine all cell types for each spage
-- Because the number of rows are the same, I first create a file called `level2_genes.txt` that contains just the gene names. This file is used to merge. 
+- Because the number of rows are the same, I first create a file called `genes_for_merging.txt` that contains just the gene names. This file is used to merge. 
 ```
 awk '{print$1}' level2/Adult/Astro_Adult_mean_magma_input.txt > genes_for_merging.txt
 cat genes_for_merging.txt | wc -l
 26671
 ```
-- Use Rscript `process_herring_combine.R`
+- Use Rscript `process_herring_combine.R`. See script `submit_process_herring_combine.sh` for how to run
 - Output: for each of the 3 levels, for each of the 6 stages, 1 file 
 
 ## Information for preprocessing up to 5 Aug 2019 update
